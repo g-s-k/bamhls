@@ -1,6 +1,6 @@
 # bamhls
 
-An HLS format playlist file sorting utility
+A utility to fetch and sort m3u8 master playlists for HLS
 
 ## About
 

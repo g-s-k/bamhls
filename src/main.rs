@@ -7,7 +7,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     match m3u8_rs::parse_master_playlist(body.as_ref()) {
         Ok((_, mut playlist)) => {
+            // slurp out contents of variant list so we can manipulate them
             let (mut iframes, variant_groups) = group_variants(playlist.variants.drain(..));
+
             // organize variant groups alphabetically by codec
             let mut key_sorted_variant_groups = variant_groups.into_iter().collect::<Vec<_>>();
             key_sorted_variant_groups.sort_by_key(|(audio_codec, _)| audio_codec.clone());
@@ -22,20 +24,20 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             playlist.variants.append(&mut iframes);
 
-            if args.debug {
-                eprintln!("{:#?}", playlist);
-            }
+            match args.output {
+                Output::Debug => println!("{:#?}", playlist),
+                Output::Diff => {
+                    // write final playlist into an intermediate string so we can compute a diff
+                    let mut buffer = Vec::new();
+                    playlist.write_to(&mut buffer)?;
+                    let stringified_buffer = String::from_utf8(buffer)?;
 
-            if args.diff {
-                // write final playlist into an intermediate string so we can compute a diff
-                let mut buffer = Vec::new();
-                playlist.write_to(&mut buffer)?;
-                let stringified_buffer = String::from_utf8(buffer)?;
-
-                println!("{}", prettydiff::diff_lines(&body, &stringified_buffer));
-            } else {
-                let mut stdout = std::io::stdout();
-                playlist.write_to(&mut stdout)?;
+                    println!("{}", prettydiff::diff_lines(&body, &stringified_buffer));
+                }
+                Output::M3U8 => {
+                    let mut stdout = std::io::stdout();
+                    playlist.write_to(&mut stdout)?;
+                }
             }
         }
 
@@ -48,16 +50,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+/// A utility to fetch and sort m3u8 master playlists for HLS
 #[derive(Clap, Debug)]
+#[clap(author = "George Kaplan <george@georgekaplan.xyz>")]
 struct Args {
-    /// Show a verbose debug representation prior to printing output
-    #[clap(short('D'), long)]
-    debug: bool,
-    /// Show a diff between the fetched file and the output
-    #[clap(short, long)]
-    diff: bool,
+    /// Select output format
+    #[clap(short, long, arg_enum, default_value = "m3u8")]
+    output: Output,
     /// The URI to the HLS master playlist you want to inspect
     stream_uri: String,
+}
+
+#[derive(Clap, Debug, PartialEq)]
+enum Output {
+    M3U8,
+    Diff,
+    Debug,
+    // We can add more formats here in the future...
 }
 
 /// Coaelesce variant streams into groups based on audio codec. I-frame variants get special
@@ -82,6 +91,7 @@ fn group_variants<I: IntoIterator<Item = VariantStream>>(
     )
 }
 
+/// Extract bandwidth attribute from EXT-X-STREAM-INF variants
 fn get_bandwidth(var: &VariantStream) -> usize {
     var.bandwidth
         .parse()

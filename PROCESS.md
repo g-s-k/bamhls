@@ -34,6 +34,31 @@ The following questions were sent to the team on Friday, 1/29:
 - What should the output format be? The same as the input? Human readable in
   some sense? Switchable between both options?
 
+The answers, respectively:
+- The sorting should be based on bitrate.
+- No prior assumptions, but feel free to discuss ideas on how you’d address
+  those problems during the panel review.
+- Correct, as the spec defines it, the audio tracks are grouped.
+- Output format should be the input to the next step in the process which would
+  be the track selection. Up the implementation to define what they might look
+  like.
+
+To elaborate a bit more on the second question, we could address those sorts of
+concerns in the track selection code - that module will likely be more tightly
+coupled to the actual network conditions and device resources. There we could
+discard variants with resolution too big to fit on the screen, or demote audio
+codecs without hardware acceleration. All that is assuming, of course, that the
+server we are talking to does not already dynamically handle those kinds of
+constraints with information we send over on request.
+
+In the interest of prototyping time, I chose to stick to the m3u8 format for
+output. Not only does that give us the ability to render line-by-line diffs (a
+good debugging feature) but the parsing library I selected (see below for more
+thoughts about that) supports bidirectional conversion between encoded text and
+a rich data structure, making that output step pretty trivial. If we wanted to
+use something a little nicer and more flexible, we could use JSON, msgpack or
+protobuf payloads to represent this data between our internal components.
+
 ## Some notes from development
 
 One rather important question was "is there an existing library to parse m3u8
