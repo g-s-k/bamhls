@@ -22,6 +22,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 playlist.variants.append(&mut variants);
             }
 
+            // also sort and add iframe variants
+            iframes.sort_by_key(get_bandwidth);
+            iframes.reverse();
             playlist.variants.append(&mut iframes);
 
             match args.output {
