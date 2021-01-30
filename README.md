@@ -19,7 +19,8 @@ This application can be installed as a precompiled binary or from source.
 
 ### Precompiled builds
 
-See the releases page for pre-built binaries.
+See the [releases page](https://github.com/g-s-k/bamhls/releases/latest) for
+pre-built binaries. They are located in the "Assets" section of each release.
 
 ### From source
 
