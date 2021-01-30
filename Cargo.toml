@@ -1,0 +1,11 @@
+[package]
+name = "bamhls"
+version = "0.1.0"
+authors = ["George Kaplan <george@georgekaplan.xyz>"]
+edition = "2018"
+
+[dependencies]
+clap = "3.0.0-beta.2"
+m3u8-rs = "1.0.7"
+prettydiff = "0.4.0"
+reqwest = { version = "0.11.0", features = ["blocking"] }
