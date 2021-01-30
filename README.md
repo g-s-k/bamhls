@@ -29,6 +29,6 @@ have a pre-built binary on the releases page, you can do the following:
 
 1. Clone this repository to your computer.
 2. Ensure you have the Rust toolchain installed (see
-   [rustup](https://rustup.sh/) for a relatively quick and well-supported way
+   [rustup](https://rustup.rs/) for a relatively quick and well-supported way
    to do this).
 3. Enter this directory on the command line and run `cargo install`.
